@@ -1,0 +1,46 @@
+{
+  "name": "test-ansible",
+  "version": "1.0.0",
+  "main": "pb_hooks/lib.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c rollup.config.mjs",
+    "dev": "NODE_ENV=development rollup -c -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/types": "^7.25.2",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.3.0",
+    "rollup": "^4.20.0",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "rollup-plugin-watch": "^1.0.4",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.4"
+  },
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "description": "",
+  "files": "[\"dist\"]",
+  "dependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.24.8",
+    "@babel/preset-typescript": "^7.24.7",
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "browserify": "^17.0.0",
+    "express": "^4.19.2",
+    "neverthrow": "^7.0.1",
+    "rollup-plugin-auto-named-exports": "^1.0.0-beta.3",
+    "uuid": "^10.0.0",
+    "vitest": "^2.0.5",
+    "zod": "^3.23.8"
+  }
+}

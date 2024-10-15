@@ -1,0 +1,7 @@
+{
+
+  "presets": [
+    '@babel/preset-env',  '@babel/typescript'
+  ],
+    "plugins": ["./babels/babel-plugin-transform-local-scope.js","./babels/babel-route-detection.js" ], // Include your custom plugin here
+}

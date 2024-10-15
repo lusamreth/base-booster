@@ -1,0 +1,15 @@
+{
+  "destination": "../pb_hooks/",
+  "compileOutputName": "import-export",
+  "sourceDir": "./src",
+  "nodeModuleAttach": true,
+  "outputEntry": "app.js",
+  "entryPoint": "index.ts",
+  "bufferEndpoint": "../automatic-pb-deployment/buffers",
+  "babel": {
+    "excludeModules": [
+      "_temporary_migration",
+      "action-hooks"
+    ]
+  }
+}
