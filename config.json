@@ -1,11 +1,12 @@
 {
-  "destination": "../pb_hooks/",
+  "destination": "testings/pb_hooks/",
   "compileOutputName": "import-export",
-  "sourceDir": "./src",
+  "sourceDir": "testings/src/",
   "nodeModuleAttach": true,
   "outputEntry": "app.js",
   "entryPoint": "index.ts",
   "bufferEndpoint": "../automatic-pb-deployment/buffers",
+  "hookTypePath": "./types.d.ts",
   "babel": {
     "excludeModules": [
       "_temporary_migration",

@@ -1,20 +1,32 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "module": "esnext",
+    "module": "CommonJS",
     "declaration": true,
-    "outDir": "pb_hooks/dist",
+    "outDir": "lib",
     "strict": false,
-    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": false,
-    "forceConsistentCasingInFileNames": true
+    "rootDir": "src",
+    "moduleResolution": "node",
+    "baseUrl": "src",
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@shared/*": [
+        "../shared/*"
+      ],
+      "@/*": [
+        "*"
+      ]
+    }
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
+    "lib/**/*",
+    "shared/**/**",
     "node_modules",
     "**/*.spec.ts"
   ]

@@ -3,42 +3,78 @@ import typescript from "typescript"
 import * as typescriptPlugin from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
-import dts from 'rollup-plugin-dts';
 import watch from 'rollup-plugin-watch';
 import fs from 'fs';
 import path from 'path';
 import babel from '@rollup/plugin-babel';
-import { fileURLToPath } from 'node:url';
-import toolCompiler from "./helpers/tool_compiler.js"
+
+import { compileTools } from "./lib/helpers/tool-compiler.js"
+import { getSourceDir } from "./lib/helpers/utils.js"
+
+import { createTrackingTransformer } from "./lib/transformers/split-transform.js"
+import terser from '@rollup/plugin-terser';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const buildInfo = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 const destination = buildInfo.destination;
 const outputFolder = buildInfo.compileOutputName;
 const getOutputPath = (destination) => `${destination}${outputFolder}`
-const sourceDir = buildInfo["sourceDir"] ?? "./src"
+const sourceDir = getSourceDir()
+console.log("SS,", sourceDir)
+const rootDir = path.resolve(sourceDir, "../")
+
+/**
+ * Recursively retribeves all files with the specified extension from a directory.
+ * @param {string} dir - The directory to traverse.
+ * @param {string} ext - The file extension to filter by (e.g., '.ts').
+ * @param {Array<string>} [files=[]] - Accumulator for collected file paths.
+ * @returns {Array<string>} - An array of file paths.
+ */
+function getAllFiles(dir, ext, files = []) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            getAllFiles(fullPath, ext, files);
+        } else if (entry.isFile() && path.extname(fullPath) === ext) {
+            files.push(fullPath);
+        }
+    }
+
+    return files;
+}
+
 
 // Custom plugin to transpile additional files
 function transpileSource() {
-    const modules = fs.readdirSync(sourceDir);
     return {
         name: 'transpile-source',
         async buildStart() {
-            for (const file of modules) {
-                const filePath = `${sourceDir}/${file}`
+            // Retrieve all .ts files recursively from the source directory
+            const allFiles = getAllFiles(sourceDir, '.ts');
+            for (const filePath of allFiles) {
                 this.addWatchFile(filePath)
                 const source = await fs.promises.readFile(filePath, 'utf-8')
                 const { outputText } = typescript.transpileModule(source, {
-                    compilerOptions: { module: 'ESNext' },
+                    compilerOptions: { module: 'ESNext', sourceMap: true },
                 });
 
+                // Determine the output file path, preserving directory structure
+                const relativePath = path.relative(sourceDir, filePath);
+                const outputFileName = relativePath.replace(/\.ts$/, '.js');
+
+                // Emit the transpiled JavaScript as a chunk
                 this.emitFile({
                     type: 'chunk',
                     id: filePath,
                     code: outputText,
-                    fileName: path.basename(filePath).replace('.ts', '.js'),
+                    map: null, // You can include source maps if needed
+                    fileName: outputFileName,
                 });
             }
+
+
         }
     }
 }
@@ -49,11 +85,10 @@ function createToolingScript() {
         name: 'transpile-tooling-script',
         async buildStart() {
             console.log("Start building tools....")
-            return toolCompiler.compileTools()
+            return compileTools()
         }
     }
 }
-
 const sharedPlugins = [
     resolve({
         preferBuiltins: true,
@@ -61,18 +96,23 @@ const sharedPlugins = [
     }),
     commonjs(),
     json(),
-    transpileSource(['src/validator.ts', 'src/utils.ts', 'src/services.ts']),
+    transpileSource(),
     createToolingScript(),
     typescriptPlugin.default({
-        tsconfig: './tsconfig.json',
+        tsconfig: `${rootDir}/tsconfig.json`,
+        transformers: {
+            after: [
+                createTrackingTransformer()
+            ]
+        },
         outDir: getOutputPath(destination),
     }),
     babel({
         babelHelpers: 'bundled',
-        // presets: ["@babel/preset-env"],
-        // plugins: ['./babel-plugin-transform-local-scope.js', "@babel/plugin-transform-modules-commonjs"], // Include your custom plugin here
         extensions: ['.js', '.ts'],
     }),
+    terser()
+
 ];
 
 
@@ -92,7 +132,7 @@ export default [
             !isProduction && {
                 name: 'watch-external',
                 buildStart() {
-                    watch({ dir: 'src', exclude: ['node_modules/**'] });
+                    watch({ dir: "testings/src", exclude: ['node_modules/**'] });
                 }
             },
         ].filter(Boolean),
